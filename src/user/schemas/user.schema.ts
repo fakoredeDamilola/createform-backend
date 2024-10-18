@@ -9,14 +9,17 @@ export class User {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop()
-  password: string;
+  @Prop({ required: false })
+  password?: string;
 
   @Prop({ required: true })
   firstName: string;
 
   @Prop()
   lastName: string;
+
+  @Prop({ default: Date.now() })
+  createdAt: Date;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Form' }] })
   forms: Form[];
