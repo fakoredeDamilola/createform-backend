@@ -5,6 +5,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
+import { FormModule } from './form/form.module';
+import { ResponseModule } from './response/response.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
     MongooseModule.forRoot('mongodb://localhost:27017/createform'),
     UserModule,
     AuthModule,
+    FormModule,
+    ResponseModule,
   ],
   controllers: [],
   providers: [

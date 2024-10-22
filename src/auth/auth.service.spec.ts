@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
+import { UnauthorizedException } from '@nestjs/common';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -44,11 +45,11 @@ describe('AuthService', () => {
   };
 
   describe('login', () => {
+    const signInDto = {
+      email: 'test@example.com',
+      password: 'password',
+    };
     it('should return an access token for valid credentials', async () => {
-      const signInDto = {
-        email: 'test@example.com',
-        password: 'password',
-      };
       const mockUser = {
         _id: 'userId',
         email: 'test@gmail.com',
@@ -57,54 +58,63 @@ describe('AuthService', () => {
 
       jest.spyOn(userService, 'findUser').mockResolvedValue(mockUser as any);
       jest.spyOn(jwtService, 'sign').mockReturnValue('mockAccessToken');
-
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
       const result = await authService.login(signInDto);
       expect(userService.findUser).toHaveBeenCalledWith(signInDto.email);
       expect(jwtService.sign).toHaveBeenCalledWith({
         sub: mockUser._id,
         username: mockUser.email,
       });
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        signInDto.password,
+        mockUser.password,
+      );
       expect(result).toEqual({ access_token: 'mockAccessToken' });
     });
-    it('should throw unauthorized for a wrong password', () => {
-      const signInDto = {
-        email: 'test@example.com',
-        password: 'password',
-      };
+    it('should throw unauthorized for a wrong password', async () => {
       const mockUser = {
         _id: 'userId',
         email: 'test@gmail.com',
         password: 'password123',
       };
-
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
       jest.spyOn(userService, 'findUser').mockResolvedValue(mockUser as any);
-
-      expect(authService.login(signInDto)).rejects.toThrow();
+      await expect(authService.login(signInDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        signInDto.password,
+        mockUser.password,
+      );
     });
   });
-  describe('googleLogin', () => {
-    it('should return user information from google', async () => {
-      const req = { user: { id: 1, username: 'googleuser' } };
-      jest
-        .spyOn(authService, 'createNewUser')
-        .mockResolvedValue(req.user as any);
-      const result = await authService.googleLogin(req);
 
-      expect(authService.createNewUser).toHaveBeenCalledWith(req.user);
+  describe('findOrCreateGoogleUser', () => {
+    it('create user account from google if it does not exist', async () => {
+      const user = {
+        firstName: 'John',
+        lastName: 'Joe',
+        email: 'google@google.com',
+      };
+      jest.spyOn(userService, 'findUser').mockResolvedValue(null);
+      jest.spyOn(userService, 'createUser').mockResolvedValue(user as any);
+      const result = await authService.findOrCreateGoogleUser(user);
 
-      expect(result).toEqual({
-        message: 'User information from google',
-        user: req.user,
-      });
+      expect(userService.findUser).toHaveBeenCalledWith(user.email);
+
+      expect(result).toEqual(user);
     });
-    it("should return no user from google if there's no user", async () => {
-      const req = { user: null };
-      const result = await authService.googleLogin(req);
-
-      expect(result).toEqual('No user from google');
+    it('should return user if user has signed up before', async () => {
+      const user = { email: 'google@goole.com' };
+      jest.spyOn(userService, 'findUser').mockResolvedValue(user as any);
+      const result = await authService.findOrCreateGoogleUser(user);
+      expect(userService.findUser).toHaveBeenCalledWith(user.email);
+      expect(userService.createUser).not.toHaveBeenCalled();
+      expect(result).toEqual(user);
     });
   });
-  describe('reigsterLocal', () => {
+
+  describe('registerLocal', () => {
     it('should create a new user with hashed password', async () => {
       const hashedPassword = 'hashedPassword';
       jest.spyOn(bcrypt, 'hash').mockReturnValue(hashedPassword);
@@ -128,22 +138,22 @@ describe('AuthService', () => {
       );
     });
   });
+
   describe('validateUser', () => {
     const user = signUpDto;
     it('should validate a user with a email on the database', async () => {
       const { password, ...result } = user;
-      jest.spyOn(userService, 'findUser').mockReturnValue(user as any);
-      jest.spyOn(bcrypt, 'compare').mockReturnValue(true);
+      jest.spyOn(userService, 'findUser').mockResolvedValue(user as any);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
 
       const response = await authService.validateUser(
         user.email,
         user.password,
       );
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
       expect(response).toEqual(result);
     });
     it('should fail the validation of a user with incorrect password', async () => {
-      jest.spyOn(bcrypt, 'compare').mockReturnValue(false);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
       const response = await authService.validateUser(
         user.email,
         user.password,

@@ -27,7 +27,10 @@ export class UserService {
 
   async findUser(email: string) {
     const user = await this.userModel.findOne({ email }).exec();
-    console.log({ user });
-    return user;
+    if (user) {
+      return user;
+    } else {
+      return null;
+    }
   }
 }

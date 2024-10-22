@@ -15,26 +15,20 @@ export class AuthService {
   async login(signInDto: SignInDto): Promise<{ access_token: string }> {
     const { email, password: pass } = signInDto;
     const user = await this.userService.findUser(email);
-    if (user?.password !== pass) {
-      throw new UnauthorizedException();
+    if (!user) {
+      throw new UnauthorizedException('Invalid username or password');
     }
-    const payload = { sub: user._id, username: user.email };
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid username or password');
+    }
+
+    const payload = { sub: user._id, email: user.email };
     const access_token = this.jwtService.sign(payload);
     return {
       access_token,
     };
-  }
-
-  async googleLogin(req) {
-    if (!req.user) {
-      return 'No user from google';
-    } else {
-      this.createNewUser(req.user);
-      return {
-        message: 'User information from google',
-        user: req.user,
-      };
-    }
   }
 
   async registerLocal(signUpDto: SignUpDto) {
@@ -66,16 +60,20 @@ export class AuthService {
     return null;
   }
 
-  async createNewUser(user: any) {
+  async findOrCreateGoogleUser(user: any) {
     const { email, firstName, lastName, picture } = user;
-    const newUser = {
-      email,
-      firstName,
-      lastName,
-      profilePicture: picture,
-      createdAt: new Date(),
-      forms: [],
-    };
-    return this.userService.createUser(newUser);
+    let findUser = await this.userService.findUser(email);
+    if (!findUser) {
+      const newUser = {
+        email,
+        firstName,
+        lastName,
+        profilePicture: picture,
+        createdAt: new Date(),
+        forms: [],
+      };
+      findUser = await this.userService.createUser(newUser);
+    }
+    return findUser;
   }
 }

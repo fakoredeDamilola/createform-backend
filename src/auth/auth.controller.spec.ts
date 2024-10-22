@@ -58,17 +58,27 @@ describe('AuthController', () => {
       expect(result).toEqual(signUpDto);
     });
   });
+
   describe('googleAuthRedirect', () => {
     it('should call googleLogin when redirected', async () => {
-      const req = { user: { id: 1, username: 'googleuser' } };
-      mockAuthService.googleLogin.mockResolvedValue({
-        access_token: 'google_token',
+      const req = {
+        user: {
+          user: { id: 1, username: 'googleuser' },
+          access_token: 'google_token',
+        },
+      };
+      const result = authController.googleAuthRedirect(req);
+      expect(result).toEqual({
+        user: req.user.user,
+        access_token: req.user.access_token,
       });
+    });
+  });
 
-      const result = await authController.googleAuthRedirect(req);
-
-      expect(authService.googleLogin).toHaveBeenCalledWith(req);
-      expect(result).toEqual({ access_token: 'google_token' });
+  describe('log out user', () => {
+    it('should logout the user', async () => {
+      const result = await authController.logout({ user: 'name' });
+      expect(result).toEqual('');
     });
   });
 });
