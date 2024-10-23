@@ -3,7 +3,7 @@ import { CreateResponseDto } from './dto/create-response.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from './schemas/response.schema';
 import { Model } from 'mongoose';
-import { FormService } from 'src/form/form.service';
+import { FormService } from '../form/form.service';
 
 @Injectable()
 export class ResponseService {

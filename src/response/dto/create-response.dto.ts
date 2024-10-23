@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { QuestionType } from 'src/form/schemas/question.schema';
+import { QuestionType } from '../../form/schemas/question.schema';
 import { AnswerDto } from './answer.dto';
 
 export class CreateResponseDto {
@@ -36,5 +36,5 @@ export class CreateResponseDto {
   slug: string;
 
   @IsArray()
-  answers: [AnswerDto];
+  answers: AnswerDto[];
 }

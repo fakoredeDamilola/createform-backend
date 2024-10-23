@@ -4,6 +4,8 @@ import { FormController } from './form.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Form, FormSchema } from './schemas/form.schema';
 import { Question, QuestionSchema } from './schemas/question.schema';
+import { User, UserSchema } from 'src/user/schemas/user.schema';
+import { Response, ResponseSchema } from 'src/response/schemas/response.schema';
 
 @Module({
   exports: [FormService],
@@ -18,6 +20,18 @@ import { Question, QuestionSchema } from './schemas/question.schema';
       {
         name: Question.name,
         schema: QuestionSchema,
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: User.name,
+        schema: UserSchema,
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: Response.name,
+        schema: ResponseSchema,
       },
     ]),
   ],

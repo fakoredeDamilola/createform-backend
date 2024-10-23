@@ -4,7 +4,7 @@ import mongoose, {
   Schema as MongooseSchema,
   Types,
 } from 'mongoose';
-import { QuestionType } from 'src/form/schemas/question.schema';
+import { QuestionType } from '../../form/schemas/question.schema';
 
 export type ResponseDocument = HydratedDocument<Response>;
 

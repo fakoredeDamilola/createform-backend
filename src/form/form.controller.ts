@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -10,7 +11,7 @@ import {
 import { FormService } from './form.service';
 import { CreateNewFormDto } from './dto/create-new-form.dto';
 import { UpdateFormDto } from './dto/update-form-dto';
-import { Public } from 'src/decorators/public-routes.decorator';
+import { Public } from '../decorators/public-routes.decorator';
 
 @Controller('form')
 export class FormController {
@@ -44,5 +45,10 @@ export class FormController {
   @Put('/update')
   async updateForm(@Body() updateFormDto: UpdateFormDto) {
     return this.formService.updateForm(updateFormDto);
+  }
+
+  @Delete('/delete/:formID')
+  async deleteForm(@Param('formID') formID: string, @Request() req) {
+    return this.formService.deleteForm(formID, req.user.userId);
   }
 }

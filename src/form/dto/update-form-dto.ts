@@ -34,5 +34,5 @@ export class UpdateFormDto extends CreateNewFormDto {
 
   @IsOptional()
   @IsArray()
-  questions: [QuestionDto];
+  questions: QuestionDto[];
 }

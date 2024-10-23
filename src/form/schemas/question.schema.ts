@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument, Types } from 'mongoose';
 
 export type QuestionDocument = HydratedDocument<Question>;
 
@@ -7,7 +7,7 @@ export enum QuestionType {
   MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
   TRUE_FALSE = 'TRUE_FALSE',
   SHORT_ANSWER = 'SHORT_ANSWER',
-  PARAGRAPH = 'ARAGRAPH',
+  PARAGRAPH = 'PARAGRAPH',
   PICK_ONE = 'PICK_ONE',
 }
 
@@ -24,6 +24,9 @@ export class Question {
 
   @Prop()
   correctAnswer?: number;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Form' })
+  formID: Types.ObjectId;
 
   @Prop()
   explanation?: string;

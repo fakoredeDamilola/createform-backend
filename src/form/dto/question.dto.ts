@@ -12,13 +12,18 @@ export class QuestionDto {
   @IsString()
   questionText: string;
 
+  @IsString()
+  @IsNotEmpty()
+  formID: string;
+
   @IsNotEmpty()
   @IsEnum(QuestionType)
   questionType: QuestionType;
 
   @IsOptional()
   @IsArray()
-  options: [string];
+  @IsString({ each: true })
+  options: string[];
 
   @IsOptional()
   @IsNumber()
