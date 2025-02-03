@@ -2,39 +2,37 @@ import {
   IsArray,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
-import { QuestionType } from '../../form/schemas/question.schema';
 import { AnswerDto } from './answer.dto';
+import { EncryptionType } from 'src/form/constants';
 
 export class CreateResponseDto {
-  @IsOptional()
-  @IsString()
-  email?: string;
+  @IsNumber()
+  noOfQuestionsAnswered: number;
 
-  @IsOptional()
-  @IsString()
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  encryptionKey?: string;
-
-  @IsEnum(QuestionType)
-  responseType: QuestionType;
+  @IsEnum(EncryptionType)
+  encryptionType: EncryptionType;
 
   @IsString()
   submissionDate: string;
+
+  @IsString()
+  formSlug: string;
+
+  @IsString()
+  totalTimeTaken: string;
 
   @IsNotEmpty()
   @IsString()
   formId: string;
 
-  @IsNotEmpty()
-  @IsString()
-  slug: string;
-
   @IsArray()
   answers: AnswerDto[];
+
+  @IsObject()
+  encryptionDetails: Object;
 }

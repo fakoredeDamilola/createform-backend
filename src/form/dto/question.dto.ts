@@ -5,35 +5,70 @@ import {
   IsEnum,
   IsArray,
   IsNumber,
+  IsBoolean,
+  IsMongoId,
 } from 'class-validator';
 import { QuestionType } from '../schemas/question.schema';
+import { OptionDto } from './option.dto';
+import { CreateAnswerDto } from 'src/form/dto/create-answer.dto';
+import { FormItemType } from '../constants';
+
 export class QuestionDto {
   @IsNotEmpty()
   @IsString()
-  questionText: string;
+  questionId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  questionFormat: string;
+
+  @IsOptional()
+  @IsString()
+  questionDescription?: string;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  required: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  multipleSelection?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  timeLimit?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  characterLimit?: boolean;
+
+  @IsOptional()
+  @IsString()
+  maxCharacters?: string;
 
   @IsString()
+  questionText: string;
+
   @IsNotEmpty()
-  formID: string;
+  @IsNumber()
+  questionNumber: number;
 
   @IsNotEmpty()
   @IsEnum(QuestionType)
   questionType: QuestionType;
 
+  @IsNotEmpty()
+  @IsEnum(FormItemType)
+  formItemType: FormItemType;
+
+  @IsOptional()
+  correctAnswer?: CreateAnswerDto;
+
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  options: string[];
+  options?: OptionDto[];
 
-  @IsOptional()
-  @IsNumber()
-  correctAnswer: number;
-
-  @IsOptional()
-  @IsString()
-  explanation: string;
-
-  @IsOptional()
-  @IsNumber()
-  timeLimit: number;
+  @IsNotEmpty()
+  @IsMongoId()
+  formId: string;
 }

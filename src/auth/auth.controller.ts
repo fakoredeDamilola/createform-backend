@@ -13,7 +13,7 @@ import { SignInDto } from './dto/signin.dto';
 import { GoogleOAuthGuard } from './guard/google-auth.guard';
 import { SignUpDto } from './dto/signup.dto';
 import { Public } from '../decorators/public-routes.decorator';
-import { LocalAuthGuard } from './guard/local-auth.guard';
+import { IGoogleBody } from './interface/IGoogleBody';
 
 @Controller('auth')
 export class AuthController {
@@ -36,6 +36,7 @@ export class AuthController {
     return req.user;
   }
 
+  @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() signUpDto: SignUpDto) {
@@ -56,5 +57,11 @@ export class AuthController {
       user: response.user,
       access_token: response.access_token,
     };
+  }
+
+  @Public()
+  @Post('/google/create')
+  createGoogleAccount(@Body('response') googleBody: IGoogleBody) {
+    return this.authService.findOrCreateGoogleUser(googleBody);
   }
 }

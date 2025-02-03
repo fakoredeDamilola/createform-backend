@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -12,20 +13,38 @@ export class AnswerDto {
   @IsNotEmpty()
   questionId: string;
 
+  @IsString()
+  @IsNotEmpty()
+  answerId: string;
+
   @IsEnum(QuestionType)
   @IsNotEmpty()
   questionType: QuestionType;
 
   @IsOptional()
-  answer?: string;
+  textResponse?: string;
 
   @IsOptional()
-  multipleChoiceAnswer?: number[];
+  optionIds?: string[];
 
   @IsOptional()
-  pickOne?: number;
+  optionId?: string;
+
+  @IsBoolean()
+  answeredQuestion?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  booleanQuestion?: Boolean;
+  booleanQuestion?: boolean;
+
+  @IsBoolean()
+  disabledResponse: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  correctResponse?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  scoreForQuestion?: number;
 }

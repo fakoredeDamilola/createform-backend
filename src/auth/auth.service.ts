@@ -1,9 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 import { SignInDto } from './dto/signin.dto';
 import { SignUpDto } from './dto/signup.dto';
+import { IGoogleBody } from './interface/IGoogleBody';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +20,8 @@ export class AuthService {
 
   async login(signInDto: SignInDto): Promise<{ access_token: string }> {
     const { email, password: pass } = signInDto;
-    const user = await this.userService.findUser(email);
+
+    const user = await this.userService.findUser(email, true);
     if (!user) {
       throw new UnauthorizedException('Invalid username or password');
     }
@@ -25,10 +32,8 @@ export class AuthService {
     }
 
     const payload = { sub: user._id, email: user.email };
-    const access_token = this.jwtService.sign(payload);
-    return {
-      access_token,
-    };
+    const access_token = this.createJWTCredential(payload);
+    return access_token;
   }
 
   async registerLocal(signUpDto: SignUpDto) {
@@ -40,9 +45,15 @@ export class AuthService {
         createdAt: new Date(),
         forms: [],
       };
-      return this.userService.createUser(newUser);
+      const user = await this.userService.createUser(newUser);
+      const payload = { sub: user._id, email: user.email };
+      const access_token = this.createJWTCredential(payload);
+      return access_token;
     } catch (e) {
-      throw new Error(e);
+      throw new HttpException(
+        'Email already exists',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -60,8 +71,13 @@ export class AuthService {
     return null;
   }
 
-  async findOrCreateGoogleUser(user: any) {
-    const { email, firstName, lastName, picture } = user;
+  async findOrCreateGoogleUser(googleBody: IGoogleBody) {
+    const {
+      email,
+      family_name: firstName,
+      given_name: lastName,
+      picture,
+    } = googleBody;
     let findUser = await this.userService.findUser(email);
     if (!findUser) {
       const newUser = {
@@ -74,6 +90,17 @@ export class AuthService {
       };
       findUser = await this.userService.createUser(newUser);
     }
-    return findUser;
+    const access_token = this.createJWTCredential({
+      sub: findUser._id,
+      email: findUser.email,
+    });
+    return access_token;
+  }
+
+  async createJWTCredential(payload: { sub: any; email: string }) {
+    const access_token = this.jwtService.sign(payload);
+    return {
+      access_token,
+    };
   }
 }

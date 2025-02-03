@@ -7,4 +7,12 @@ export class CreateNewFormDto {
   @IsOptional()
   @IsString()
   formDescription?: string;
+
+  @IsString()
+  @IsOptional()
+  formStartPageId: string;
+
+  @IsString()
+  @IsOptional()
+  formEndPageId: string;
 }

@@ -22,11 +22,14 @@ export class UserService {
 
   async findAll() {
     const users = await this.userModel.find().exec();
-    console.log({ users });
   }
 
-  async findUser(email: string) {
-    const user = await this.userModel.findOne({ email }).exec();
+  async findUser(email: string, password?: boolean) {
+    let query = this.userModel.findOne({ email });
+    if (!password) {
+      query = query.select('-password');
+    }
+    const user = await query;
     if (user) {
       return user;
     } else {

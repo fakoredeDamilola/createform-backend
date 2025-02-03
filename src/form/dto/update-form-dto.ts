@@ -1,22 +1,28 @@
 import {
   IsArray,
-  IsEnum,
+  IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { CreateNewFormDto } from './create-new-form.dto';
 import { QuestionDto } from './question.dto';
-import { EncryptionType } from '../constants';
+import FormSettingsDto from './form-settings.dto';
+import { StaticPageDto } from './static-page.dto';
 
 export class UpdateFormDto extends CreateNewFormDto {
   @IsNotEmpty()
   @IsString()
-  formId: string;
+  _id: string;
 
-  @IsNotEmpty()
   @IsString()
-  formType: string;
+  formType?: string;
+
+  formSettings: FormSettingsDto;
+
+  @IsNumber()
+  noOfQuestions?: number;
 
   @IsOptional()
   @IsString()
@@ -27,12 +33,23 @@ export class UpdateFormDto extends CreateNewFormDto {
   endingDate?: string;
 
   @IsOptional()
-  encryption?: boolean;
-
-  @IsEnum(EncryptionType)
-  encryptionType: EncryptionType;
-
-  @IsOptional()
   @IsArray()
   questions: QuestionDto[];
+
+  @IsString()
+  @IsOptional()
+  totalFormTimeLimit: string;
+
+  @IsBoolean()
+  publish: boolean;
+
+  @IsArray()
+  @IsOptional()
+  encryptionDetails: string[];
+
+  @IsOptional()
+  formStartPage: StaticPageDto;
+
+  @IsOptional()
+  formEndPage: StaticPageDto;
 }

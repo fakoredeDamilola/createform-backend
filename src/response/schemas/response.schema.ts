@@ -10,17 +10,20 @@ export type ResponseDocument = HydratedDocument<Response>;
 
 @Schema({ timestamps: true })
 export class Response {
-  @Prop({ unique: true, sparse: true, default: null })
-  email?: string;
+  @Prop()
+  formSlug: string;
 
   @Prop()
-  name?: string;
+  noOfQuestionsAnswered?: number;
 
-  @Prop({ unique: true })
-  encryptionKey?: string;
+  @Prop({ type: Boolean, default: false })
+  responseSubmitted: boolean;
 
-  @Prop({ type: String, enum: QuestionType, required: true })
-  responseType: QuestionType;
+  @Prop()
+  encryptionType?: string;
+
+  @Prop()
+  totalTimeTaken: string;
 
   @Prop({ type: Date, default: Date.now })
   submissionDate: Date;
@@ -37,10 +40,15 @@ export class Response {
           required: true,
         },
         questionType: { type: String, enum: QuestionType, required: true },
-        answer: { type: String },
-        multipleChoiceAnswer: [{ type: Number }],
+        textResponse: { type: String },
+        optionIds: [{ type: String }],
         booleanQuestion: { type: Boolean },
-        pickOne: { type: Number },
+        answerId: { type: String },
+        optionId: { type: String },
+        answeredQuestion: { type: Boolean },
+        disabledResponse: { type: Boolean },
+        timeLeft: { type: Number },
+        scoreForQuestion: { type: Number },
       },
     ],
     required: true,
@@ -49,12 +57,20 @@ export class Response {
     {
       questionId: Types.ObjectId;
       questionType: QuestionType;
-      answer?: string;
-      multipleChoiceAnswer?: number[];
+      textResponse?: string;
+      optionIds?: string[];
+      optionId?: string;
+      answerId: string;
+      timeLeft: number;
       booleanQuestion?: Boolean;
-      pickOne?: number;
+      answeredQuestion?: Boolean;
+      disabledResponse: boolean;
+      scoreForQuestion: number;
     },
   ];
+
+  @Prop({ type: Object, default: {} })
+  encryptionDetails?: Record<string, any>;
 }
 
 export const ResponseSchema = SchemaFactory.createForClass(Response);
