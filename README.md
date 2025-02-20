@@ -39,7 +39,7 @@ Future updates will include:
 ### Setup
 1. Clone the repository:
    ```sh
-   git [clone https://github.com/yourusername/form-builder.git](https://github.com/fakoredeDamilola/createform-backend)
+   git clone [createform-backend](https://github.com/fakoredeDamilola/createform-backend)
    cd createform-backend
    ```
 
