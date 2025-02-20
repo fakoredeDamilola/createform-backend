@@ -35,4 +35,10 @@ export default class FormSettingsDto {
 
   @IsBoolean()
   encryption: boolean;
+
+  @IsBoolean()
+  showStartPage: boolean;
+
+  @IsBoolean()
+  markResponseAfterSubmission: boolean;
 }

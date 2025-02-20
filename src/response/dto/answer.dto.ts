@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { OptionDto } from 'src/form/dto/option.dto';
 import { QuestionType } from 'src/form/schemas/question.schema';
 
 export class AnswerDto {
@@ -25,7 +26,7 @@ export class AnswerDto {
   textResponse?: string;
 
   @IsOptional()
-  optionIds?: string[];
+  selectedOptions?: OptionDto[];
 
   @IsOptional()
   optionId?: string;
@@ -47,4 +48,8 @@ export class AnswerDto {
   @IsOptional()
   @IsNumber()
   scoreForQuestion?: number;
+
+  @IsOptional()
+  @IsNumber()
+  timeLeft?: number;
 }

@@ -12,6 +12,7 @@ export enum QuestionType {
   statement = 'Statement',
   email = 'Email',
   number = 'Number',
+  fill_the_gap = 'Fill The Gap',
   boolean = 'Boolean',
 }
 
@@ -51,7 +52,7 @@ export class Question {
   maxCharacters?: string;
 
   @Prop()
-  questionText?: string;
+  questionText?: string[];
 
   @Prop({ required: true })
   questionNumber: number;

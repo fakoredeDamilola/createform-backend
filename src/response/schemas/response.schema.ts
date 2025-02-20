@@ -5,6 +5,7 @@ import mongoose, {
   Types,
 } from 'mongoose';
 import { QuestionType } from '../../form/schemas/question.schema';
+import { Option, OptionSchema } from 'src/form/schemas/options.schema';
 
 export type ResponseDocument = HydratedDocument<Response>;
 
@@ -41,7 +42,7 @@ export class Response {
         },
         questionType: { type: String, enum: QuestionType, required: true },
         textResponse: { type: String },
-        optionIds: [{ type: String }],
+        selectedOptions: [{ type: OptionSchema }],
         booleanQuestion: { type: Boolean },
         answerId: { type: String },
         optionId: { type: String },
@@ -58,7 +59,7 @@ export class Response {
       questionId: Types.ObjectId;
       questionType: QuestionType;
       textResponse?: string;
-      optionIds?: string[];
+      selectedOptions?: Option[];
       optionId?: string;
       answerId: string;
       timeLeft: number;
@@ -66,6 +67,7 @@ export class Response {
       answeredQuestion?: Boolean;
       disabledResponse: boolean;
       scoreForQuestion: number;
+      correctResponse: boolean;
     },
   ];
 

@@ -26,6 +26,8 @@ export class Form {
     addTimeLimitToForm: boolean;
     popQuiz: boolean;
     encryption: boolean;
+    showStartPage: boolean;
+    markResponseAfterSubmission: boolean;
   };
 
   @Prop({ type: Object })
@@ -99,6 +101,7 @@ export class Form {
         enum: FormStaticType,
         default: FormStaticType.START,
       },
+      showPage: Boolean,
     },
   })
   formStartPage: {
@@ -108,6 +111,7 @@ export class Form {
     instructions: string[];
     formItemType: FormItemType;
     formStaticType: FormStaticType;
+    showPage: boolean;
   };
 
   @Prop({
@@ -126,6 +130,7 @@ export class Form {
         enum: FormStaticType,
         default: FormStaticType.END,
       },
+      showPage: Boolean,
     },
   })
   formEndPage: {
@@ -135,6 +140,7 @@ export class Form {
     instructions?: string[];
     formItemType: FormItemType;
     formStaticType: FormStaticType;
+    showPage: boolean;
   };
 }
 
