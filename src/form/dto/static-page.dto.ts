@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsMongoId,
   IsNotEmpty,
@@ -33,4 +34,7 @@ export class StaticPageDto {
   @IsNotEmpty()
   @IsEnum(FormStaticType)
   formStaticType: FormStaticType;
+
+  @IsBoolean()
+  showPage: boolean;
 }

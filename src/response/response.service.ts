@@ -1,13 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Response } from './schemas/response.schema';
-import { get, Model, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { FormService } from '../form/form.service';
 import { UpdateResponseDto } from './dto/update-response.dto';
-import { IAnswer } from './interfaces/IAnswer';
-import { ResponseType } from 'src/form/constants';
 import { UpdateAnswerInResponseDto } from './dto/update-answer-in-response.dto';
 import { QuestionType } from 'src/form/schemas/question.schema';
+import { UpdateEncryptionDto } from './dto/update-encryption.dto';
 
 @Injectable()
 export class ResponseService {
@@ -57,52 +56,96 @@ export class ResponseService {
   async updateAnswerInResponse(
     updateAnswerInResponseDto: UpdateAnswerInResponseDto,
   ) {
+    console.log({ updateAnswerInResponseDto });
     const answerId = updateAnswerInResponseDto.answer.answerId;
+    const answerExists = await this.responseModel.findOne({
+      _id: updateAnswerInResponseDto.responseId,
+      'answers.answerId': answerId,
+    });
     const query = {
       _id: updateAnswerInResponseDto.responseId,
       'answers.answerId': answerId,
     };
     const update = {
       $set: {
-        'answers.$': updateAnswerInResponseDto.answer,
+        'answers.$.timeLeft': updateAnswerInResponseDto.answer.timeLeft ?? 0,
+        'answers.$.scoreForQuestion':
+          updateAnswerInResponseDto.answer.scoreForQuestion,
+        'answers.$.optionId': updateAnswerInResponseDto.answer.optionId,
+        'answers.$.selectedOptions':
+          updateAnswerInResponseDto.answer.selectedOptions,
+        'answers.$.textResponse': updateAnswerInResponseDto.answer.textResponse,
+        'answers.$.disabledResponse':
+          updateAnswerInResponseDto.answer.disabledResponse,
+        'answers.$.answeredQuestion':
+          updateAnswerInResponseDto.answer.answeredQuestion,
+        'answers.$.correctResponse':
+          updateAnswerInResponseDto.answer.correctResponse,
       },
     };
-    await this.responseModel.updateOne(query, update);
+    const updated = await this.responseModel.updateOne(query, update);
+
+    console.log({ updated, answerExists });
     let correctAnswer, totalResponse;
-    const form = await this.formService.getFormByFormID(
-      updateAnswerInResponseDto.formId,
-    );
-    if (updateAnswerInResponseDto.popQuiz) {
-      await this.findQuestionAndMark(
-        updateAnswerInResponseDto.answer,
-        updateAnswerInResponseDto.responseId,
-      );
-      const question: any = form.questions.find(
-        (question) =>
-          question._id.toString() ===
-          updateAnswerInResponseDto.answer.questionId,
-      );
-      correctAnswer = question.correctAnswer;
-      console.log({ correctAnswer: correctAnswer.answerResults });
-    }
-    if (updateAnswerInResponseDto.responseSubmitted) {
-      await this.responseModel.findOneAndUpdate(
-        { responseId: updateAnswerInResponseDto.responseId },
-        { responseSubmitted: true },
+
+    const { popQuiz, responseSubmitted } = updateAnswerInResponseDto;
+    if (popQuiz || responseSubmitted) {
+      const form = await this.formService.getFormByFormID(
+        updateAnswerInResponseDto.formId,
       );
 
-      totalResponse = await this.getResponseByResponseId(
-        updateAnswerInResponseDto.responseId,
-      );
+      if (popQuiz) {
+        await this.findQuestionAndMark(
+          updateAnswerInResponseDto.answer,
+          updateAnswerInResponseDto.responseId,
+        );
+        const question: any = form.questions.find(
+          (question) =>
+            question._id.toString() ===
+            updateAnswerInResponseDto.answer.questionId,
+        );
+        correctAnswer = question.correctAnswer;
+        console.log({ correctAnswer: correctAnswer.answerResults });
+      }
+      if (responseSubmitted) {
+        await this.responseModel.findOneAndUpdate(
+          { responseId: updateAnswerInResponseDto.responseId },
+          { responseSubmitted: true },
+        );
+
+        if (form.formSettings.markResponseAfterSubmission) {
+          this.markResponseWithAnswers(updateAnswerInResponseDto.responseId);
+        }
+
+        totalResponse = await this.getResponseByResponseId(
+          updateAnswerInResponseDto.responseId,
+        );
+      }
     }
+
     return { correctAnswer, totalResponse };
   }
 
-  async markResponseWithAnswers(userResponse: any) {
-    const answers = userResponse.answers;
+  async updateEncryptionDetailsInResponse(
+    updateEncryptionDto: UpdateEncryptionDto,
+  ) {
+    console.log({ updateEncryptionDto });
+    const { responseId } = updateEncryptionDto;
 
-    for (const answer of answers || []) {
-      this.findQuestionAndMark(answer.toObject(), userResponse._id);
+    const result = await this.responseModel.findByIdAndUpdate(responseId, {
+      encryptionDetails: updateEncryptionDto.encryptionDetails,
+    });
+    return result;
+  }
+
+  async markResponseWithAnswers(responseId: string) {
+    const userResponse = await this.getResponseByResponseId(responseId);
+    if (userResponse) {
+      const answers = userResponse.answers;
+
+      for (const answer of answers || []) {
+        this.findQuestionAndMark(answer, userResponse._id.toString());
+      }
     }
 
     return 'response Saved';
@@ -121,6 +164,7 @@ export class ResponseService {
     const findQuestion = await this.formService.getQuestionByIdWithAnswer(
       answer.questionId,
     );
+    console.log({ answer, correctAnswer: findQuestion.correctAnswer });
     if (!findQuestion) {
       return; // Skip if the question isn't found
     } else {
@@ -135,30 +179,33 @@ export class ResponseService {
           break;
         case QuestionType.long_text || QuestionType.short_text:
           isAnswerCorrect =
-            findQuestion?.correctAnswer.answerResults[0].toLowerCase() ===
+            findQuestion?.correctAnswer.answerResults[0].toLowerCase() ==
             answer.textResponse.toLowerCase()
               ? true
               : false;
           break;
+        case QuestionType.fill_the_gap:
+          console.log('fill the gap');
+          findQuestion.correctAnswer.answerResults.forEach((ans, index) =>
+            ans == answer.selectedOptions[index] ? true : false,
+          );
         default:
           break;
       }
+      console.log({ isAnswerCorrect });
 
-      const newFields = {
-        ...answer, // Preserve existing fields of the answer
-        correctResponse: isAnswerCorrect,
-        scoreForQuestion: isAnswerCorrect ? 1 : 0,
-      };
       const query = {
         _id: userResponseId,
         'answers.answerId': answer.answerId,
       };
       const update = {
         $set: {
-          'answers.$': newFields,
+          'answers.$.correctResponse': isAnswerCorrect,
+          'answers.$.scoreForQuestion': isAnswerCorrect ? 1 : 0,
+          'answers.$.answeredQuestion': true,
         },
       };
-      const updateAnswer = await this.responseModel.updateOne(query, update);
+      await this.responseModel.updateOne(query, update);
     }
   }
 }

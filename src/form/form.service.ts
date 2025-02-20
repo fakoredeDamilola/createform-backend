@@ -51,6 +51,8 @@ export class FormService {
           addTimeLimitToForm: false,
           popQuiz: false,
           encryption: false,
+          showStartPage: false,
+          markResponseAfterSubmission: false,
         },
         formResponseInsights: {
           views: 0,
@@ -71,6 +73,7 @@ export class FormService {
           questionId: createNewFormDto.formStartPageId,
           formItemType: FormItemType.STATIC,
           formStaticType: FormStaticType.START,
+          showPage: false,
         },
         formEndPage: {
           pageTitle: '',
@@ -79,6 +82,7 @@ export class FormService {
           questionId: createNewFormDto.formEndPageId,
           formItemType: FormItemType.STATIC,
           formStaticType: FormStaticType.END,
+          showPage: false,
         },
       };
       const savedForm = await this.formModel.create(newForm);
@@ -159,7 +163,7 @@ export class FormService {
 
   async updateForm(updateFormDto: UpdateFormDto) {
     try {
-      console.log({ updateFormDto });
+      console.log({ q: updateFormDto.questions });
       const formToEdit = await this.formModel.findById(updateFormDto._id);
 
       if (!formToEdit) {

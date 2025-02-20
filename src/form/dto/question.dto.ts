@@ -46,8 +46,8 @@ export class QuestionDto {
   @IsString()
   maxCharacters?: string;
 
-  @IsString()
-  questionText: string;
+  @IsArray()
+  questionText: string[];
 
   @IsNotEmpty()
   @IsNumber()

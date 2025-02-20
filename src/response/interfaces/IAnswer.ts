@@ -5,7 +5,7 @@ export interface IAnswer {
   answerId: string;
   questionId: string;
   timeLeft: number;
-  optionIds?: string[];
+  selectedOptions?: string[];
   optionId?: string;
   booleanQuestion?: boolean;
   textResponse?: string;
