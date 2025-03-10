@@ -6,11 +6,9 @@ import {
   HttpStatus,
   Post,
   Request,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signin.dto';
-import { GoogleOAuthGuard } from './guard/google-auth.guard';
 import { SignUpDto } from './dto/signup.dto';
 import { Public } from '../decorators/public-routes.decorator';
 import { IGoogleBody } from './interface/IGoogleBody';
@@ -41,22 +39,6 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() signUpDto: SignUpDto) {
     return this.authService.registerLocal(signUpDto);
-  }
-
-  @Get('google')
-  @Public()
-  @UseGuards(GoogleOAuthGuard)
-  async googleAuth() {}
-
-  @Get('google/redirect')
-  @Public()
-  @UseGuards(GoogleOAuthGuard)
-  googleAuthRedirect(@Request() req) {
-    const response = req.user;
-    return {
-      user: response.user,
-      access_token: response.access_token,
-    };
   }
 
   @Public()
